@@ -46,7 +46,7 @@ export const LEVELS: Level[] = [
   },
 ];
 
-export const levelAt = (n: number) => LEVELS[(n - 1) % LEVELS.length];
+export const levelAt = (n: number): Level => LEVELS[(n - 1) % LEVELS.length]!;
 
 export type Body = { x: number; y: number; vx: number; vy: number; onGround: boolean };
 export type Input = { left: boolean; right: boolean; up: boolean; down: boolean };
