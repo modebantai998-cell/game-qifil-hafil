@@ -8,7 +8,7 @@ import { H, PH, PW, W, levelAt, step, touches, type Body, type Input } from "@/l
 type Role = "qifil" | "hafil";
 
 export const Route = createFileRoute("/_authenticated/play/$room")({
-  validateSearch: (s: Record<string, unknown>): { role: Role } => ({ role: s.role === "hafil" ? "hafil" : "qifil" }),
+  validateSearch: (s: Record<string, unknown>): { role: Role } => ({ role: s["role"] === "hafil" ? "hafil" : "qifil" }),
   head: () => ({
     meta: [
       { title: "Main - QIFIL DAN HAFIL" },
@@ -73,7 +73,7 @@ function Play() {
     ch.on("presence", { event: "sync" }, () => {
       const st = ch.presenceState<{ name: string }>();
       const here = !!st[other];
-      if (here) s.names[other] = st[other][0].name;
+      if (here) s.names[other] = st[other]?.[0]?.name ?? s.names[other];
       setPartnerHere(here);
     })
       .on("broadcast", { event: "pos" }, ({ payload }) => { s.theirs.tx = payload.x; s.theirs.ty = payload.y; if (s.theirs.x < -50) { s.theirs.x = payload.x; s.theirs.y = payload.y; } })
