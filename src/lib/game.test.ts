@@ -17,3 +17,14 @@ describe("game rules", () => {
     expect(b.onGround).toBe(true);
   });
 });
+
+import { LEVELS, JUMP, GRAVITY } from "./game";
+describe("levels", () => {
+  it("every block is low enough to jump onto alone", () => {
+    const reach = (JUMP * JUMP) / (2 * GRAVITY);
+    for (const L of LEVELS) {
+      const tops = [...new Set(L.platforms.map((p) => p.y))].sort((a, b) => b - a);
+      for (let i = 1; i < tops.length; i++) expect(tops[i - 1]! - tops[i]!).toBeLessThan(reach - 20);
+    }
+  });
+});
