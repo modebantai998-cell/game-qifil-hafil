@@ -24,6 +24,7 @@ function AuthPage() {
   const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [show, setShow] = useState(false);
   const navigate = useNavigate();
 
   const submit = async (e: React.FormEvent) => {
@@ -57,7 +58,10 @@ function AuthPage() {
           ))}
         </div>
         <input className="pixel-input" placeholder="Nama" value={name} onChange={(e) => setName(e.target.value)} autoComplete="username" />
-        <input className="pixel-input" type="password" placeholder="Password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete={mode === "daftar" ? "new-password" : "current-password"} />
+        <div className="relative">
+          <input className="pixel-input pr-12" type={show ? "text" : "password"} placeholder="Password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete={mode === "daftar" ? "new-password" : "current-password"} />
+          <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Sembunyikan password" : "Lihat password"} className="absolute right-2 top-1/2 -translate-y-1/2 px-2 text-xl">{show ? "🙈" : "👁️"}</button>
+        </div>
         {err && <p className="text-sm text-destructive">{err}</p>}
         <button disabled={busy} className="pixel-btn w-full">{busy ? "..." : mode === "daftar" ? "DAFTAR & MASUK" : "MASUK"}</button>
       </form>
