@@ -142,3 +142,33 @@
     color: var(--color-foreground);
   }
 }
+
+:root {
+  --qifil: oklch(0.78 0.13 0);
+  --hafil: oklch(0.72 0.13 255);
+  --game-bg: oklch(0.2 0.04 280);
+  --game-bar: oklch(0.25 0.06 265);
+}
+@theme inline {
+  --color-qifil: var(--qifil);
+  --color-hafil: var(--hafil);
+  --color-game-bg: var(--game-bg);
+  --color-game-bar: var(--game-bar);
+  --font-mono: ui-monospace, "Courier New", monospace;
+}
+@layer components {
+  .game-shell { @apply min-h-screen bg-game-bg font-mono text-primary-foreground; }
+  .game-topbar { @apply flex items-center justify-between gap-2 bg-game-bar p-2; }
+  .game-canvas { @apply mx-auto block h-auto w-full max-w-[1280px]; }
+  .chat-box { @apply mx-auto my-2 w-[calc(100%-1rem)] max-w-[480px] rounded-2xl border-2 border-muted-foreground bg-foreground/90 p-3; }
+  .quick-btn { @apply rounded-xl bg-muted-foreground/40 px-2 py-1 text-[10px] hover:bg-muted-foreground/70; }
+  .msg { @apply max-w-[85%] rounded-xl px-3 py-2 text-[13px] text-foreground; }
+  .msg-q { @apply mr-auto bg-qifil; }
+  .msg-h { @apply ml-auto bg-hafil text-right; }
+  .msg-sys { @apply mx-auto bg-chart-4 text-center text-[11px]; }
+  .chat-field { @apply rounded-lg bg-background p-2 text-sm text-foreground; }
+  .send-btn { @apply rounded-lg bg-qifil px-4 py-2 font-bold text-foreground; }
+  .pad-btn { @apply h-11 w-11 touch-none select-none rounded-lg text-lg font-bold text-foreground active:scale-95; }
+  .pad-q { @apply bg-qifil; }
+  .pad-h { @apply bg-hafil; }
+}
