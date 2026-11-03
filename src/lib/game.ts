@@ -22,26 +22,27 @@ export type Level = {
 
 const ground: Rect = { x: 0, y: 640, w: W, h: 80 };
 
+// Every step is at most 90px above the one below (jump reaches ~120px), so both players can climb alone.
 export const LEVELS: Level[] = [
   {
-    platforms: [ground, { x: 600, y: 490, w: 680, h: 150 }, { x: 860, y: 340, w: 120, h: 24 }],
+    platforms: [ground, { x: 600, y: 560, w: 680, h: 80 }, { x: 860, y: 470, w: 120, h: 24 }],
     button: { x: 330, y: 640 },
-    key: { x: 905, y: 290 },
-    door: { x: 1180, y: 410 },
+    key: { x: 905, y: 420 },
+    door: { x: 1180, y: 480 },
     spawn: [80, 140],
   },
   {
-    platforms: [ground, { x: 380, y: 520, w: 420, h: 120 }, { x: 800, y: 380, w: 480, h: 260 }],
-    button: { x: 600, y: 520 },
-    key: { x: 1000, y: 280 },
-    door: { x: 1180, y: 300 },
+    platforms: [ground, { x: 380, y: 560, w: 420, h: 80 }, { x: 800, y: 470, w: 480, h: 170 }],
+    button: { x: 600, y: 560 },
+    key: { x: 1000, y: 410 },
+    door: { x: 1180, y: 390 },
     spawn: [80, 140],
   },
   {
-    platforms: [ground, { x: 250, y: 500, w: 160, h: 140 }, { x: 560, y: 400, w: 160, h: 24 }, { x: 860, y: 300, w: 420, h: 340 }],
+    platforms: [ground, { x: 250, y: 560, w: 160, h: 80 }, { x: 560, y: 470, w: 160, h: 24 }, { x: 860, y: 380, w: 420, h: 260 }],
     button: { x: 120, y: 640 },
-    key: { x: 620, y: 340 },
-    door: { x: 1180, y: 220 },
+    key: { x: 620, y: 420 },
+    door: { x: 1180, y: 300 },
     spawn: [60, 160],
   },
 ];
