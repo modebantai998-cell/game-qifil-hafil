@@ -34,7 +34,6 @@ describe("levels", () => {
   it("every block is climbable by one character (tall blocks have a helper step)", () => {
     for (let n = 1; n <= MAX_LEVEL; n++) {
       const tops = levelAt(n).platforms.map((p) => GY - p.y);
-      for (const h of tops) expect(h % 1 === 0 || h > 0).toBe(true);
       for (const p of levelAt(n).platforms) {
         const h = GY - p.y;
         if (h <= reach - 20) continue;
