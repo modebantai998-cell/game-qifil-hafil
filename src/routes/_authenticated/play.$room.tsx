@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
-import { H, PH, PW, W, levelAt, step, touches, type Body, type Input } from "@/lib/game";
+import { GY, H, MAX_LEVEL, PH, PW, SKINS, W, isSkin, levelAt, overlap, step, touches, type Body, type Input, type Skin } from "@/lib/game";
+import { savedSkin } from "@/components/Character";
 
 type Role = "qifil" | "hafil";
 
@@ -22,7 +23,6 @@ export const Route = createFileRoute("/_authenticated/play/$room")({
   component: Play,
 });
 
-const COLORS = { qifil: { body: "#FF8FAB", hat: "#E94F86" }, hafil: { body: "#6BA5FF", hat: "#3B6FD9" } };
 const QUICK = ["Sini!", "Tumpuk!", "Injak tombol!", "Ambil kunci!", "Ke pintu!", "Hore! 🎉"];
 
 function Play() {
@@ -42,7 +42,10 @@ function Play() {
   const g = useRef({
     level: 1,
     mine: { x: 0, y: 0, vx: 0, vy: 0, onGround: false } as Body,
-    theirs: { x: -100, y: -100, tx: -100, ty: -100 },
+    theirs: { x: -100, y: -100, tx: -100, ty: -100, vx: 0 },
+    skins: { qifil: "pink", hafil: "biru" } as Record<Role, Skin>,
+    safe: { x: 80, y: 560 },
+    walk: 0,
     names: { qifil: "QIFIL", hafil: "HAFIL" } as Record<Role, string>,
     bubbles: { qifil: { t: "", n: 0 }, hafil: { t: "", n: 0 } } as Record<Role, { t: string; n: number }>,
     button: false,
@@ -57,6 +60,7 @@ function Play() {
     const L = levelAt(n);
     s.level = n; s.button = false; s.keyBy = ""; s.winning = false;
     s.mine = { x: L.spawn[role === "qifil" ? 0 : 1], y: 560, vx: 0, vy: 0, onGround: false };
+    s.safe = { x: s.mine.x, y: 560 };
     setLevel(n);
   };
 
@@ -69,11 +73,14 @@ function Play() {
     if (!me) return;
     const s = g.current;
     s.names[role] = me.username;
+    s.skins[role] = savedSkin(role);
     const ch = supabase.channel(`room:${room}`, { config: { presence: { key: role }, broadcast: { self: false } } });
     ch.on("presence", { event: "sync" }, () => {
       const st = ch.presenceState<{ name: string }>();
       const here = !!st[other];
       if (here) s.names[other] = st[other]?.[0]?.name ?? s.names[other];
+      const sk = (st[other]?.[0] as { skin?: string } | undefined)?.skin;
+      if (isSkin(sk)) s.skins[other] = sk;
       setPartnerHere(here);
     })
       .on("broadcast", { event: "pos" }, ({ payload }) => { s.theirs.tx = payload.x; s.theirs.ty = payload.y; if (s.theirs.x < -50) { s.theirs.x = payload.x; s.theirs.y = payload.y; } })
@@ -81,7 +88,7 @@ function Play() {
       .on("broadcast", { event: "key" }, ({ payload }) => { s.keyBy = payload.by; })
       .on("broadcast", { event: "level" }, ({ payload }) => { flash(`🎉 Level ${payload.done} selesai!`); resetLevel(payload.next); })
       .on("broadcast", { event: "chat" }, ({ payload }) => { s.bubbles[other] = { t: payload.t, n: 200 }; })
-      .subscribe((st) => { if (st === "SUBSCRIBED") ch.track({ name: me.username }); });
+      .subscribe((st) => { if (st === "SUBSCRIBED") ch.track({ name: me.username, skin: s.skins[role] }); });
     chan.current = ch;
     return () => { supabase.removeChannel(ch); chan.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,10 +115,18 @@ function Play() {
       const s = g.current;
       const L = levelAt(s.level);
       const th = s.theirs;
-      th.x += (th.tx - th.x) * 0.35; th.y += (th.ty - th.y) * 0.35;
+      const ox = th.x;
+      th.x += (th.tx - th.x) * 0.35; th.y += (th.ty - th.y) * 0.35; th.vx = th.x - ox;
       const partnerRect = { x: th.x, y: th.y, w: PW, h: PH };
-      s.mine = step(s.mine, input.current, [...L.platforms, partnerRect]);
-      const m = s.mine;
+      s.mine = step(s.mine, input.current, [...L.platforms, partnerRect], L.width);
+      let m = s.mine;
+      const box = { x: m.x + 4, y: m.y + 4, w: PW - 8, h: PH - 4 };
+      if (m.y > H || L.spikes.some((k) => overlap(box, k))) {
+        s.mine = m = { x: s.safe.x, y: s.safe.y - 80, vx: 0, vy: 0, onGround: false };
+      } else if (m.onGround && !L.spikes.some((k) => Math.abs(k.x + k.w / 2 - (m.x + PW / 2)) < k.w / 2 + 70)) {
+        s.safe = { x: m.x, y: m.y };
+      }
+      s.walk += Math.abs(m.vx) > 0.5 ? 1 : 0;
       const send = (event: string, payload: object) => chan.current?.send({ type: "broadcast", event, payload });
       if (t - lastSend > 50) { lastSend = t; send("pos", { x: Math.round(m.x), y: Math.round(m.y) }); }
 
@@ -123,7 +138,7 @@ function Play() {
       const atDoor = (b: { x: number; y: number }) => touches(b, L.door.x + 30, L.door.y + 40, 60);
       if (role === "qifil" && !s.winning && s.button && s.keyBy && atDoor(m) && atDoor(th)) {
         s.winning = true;
-        const next = s.level + 1;
+        const next = s.level >= MAX_LEVEL ? 1 : s.level + 1;
         send("level", { done: s.level, next });
         flash(`🎉 Level ${s.level} selesai!`);
         resetLevel(next);
@@ -131,8 +146,14 @@ function Play() {
 
       // draw
       ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "#F2884B";
-      for (const p of L.platforms) ctx.fillRect(p.x, p.y, p.w, p.h);
+      const cam = Math.max(0, Math.min(L.width - W, m.x + PW / 2 - W / 2));
+      ctx.save(); ctx.translate(-cam, 0);
+      ctx.fillStyle = "#F2884B"; ctx.strokeStyle = "#C8642A"; ctx.lineWidth = 3;
+      for (const p of L.platforms) { ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeRect(p.x + 1.5, p.y + 1.5, p.w - 3, p.h - 3); }
+      ctx.fillStyle = "#555";
+      for (const k of L.spikes) for (let sx = k.x; sx < k.x + k.w; sx += 16) {
+        ctx.beginPath(); ctx.moveTo(sx, GY); ctx.lineTo(sx + 8, GY - k.h); ctx.lineTo(sx + 16, GY); ctx.fill();
+      }
       // door
       ctx.fillStyle = s.button ? "#4ADE80" : "#5D4037"; ctx.fillRect(L.door.x, L.door.y, 60, 80);
       ctx.fillStyle = "#FFD93D"; ctx.fillRect(L.door.x + 44, L.door.y + 40, 6, 6);
@@ -143,11 +164,16 @@ function Play() {
       const kx = holder ? holder.x + 6 : L.key.x, ky = holder ? holder.y - 48 : L.key.y;
       ctx.fillStyle = "gold"; ctx.fillRect(kx, ky, 20, 8); ctx.beginPath(); ctx.arc(kx + 22, ky + 4, 7, 0, Math.PI * 2); ctx.fill();
 
-      const drawP = (who: Role, x: number, y: number) => {
-        const c = COLORS[who];
-        ctx.fillStyle = c.body; ctx.fillRect(x, y, PW, PH);
+      const blink = t % 5000 < 160;
+      const drawP = (who: Role, x: number, y: number, moving: boolean, air: boolean, phase: number) => {
+        const c = SKINS[s.skins[who]];
+        ctx.fillStyle = c.body; ctx.fillRect(x, y, PW, PH - 8);
         ctx.fillStyle = c.hat; ctx.fillRect(x - 3, y - 10, PW + 6, 12); ctx.beginPath(); ctx.arc(x + PW / 2, y - 12, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#000"; ctx.fillRect(x + 10, y + 12, 5, 6); ctx.fillRect(x + 25, y + 12, 5, 6);
+        ctx.fillStyle = "#000";
+        if (blink) { ctx.fillRect(x + 10, y + 15, 5, 2); ctx.fillRect(x + 25, y + 15, 5, 2); }
+        else { ctx.fillRect(x + 10, y + 12, 5, 7); ctx.fillRect(x + 25, y + 12, 5, 7); }
+        const sw = air ? 3 : moving ? Math.sin(phase * 0.35) * 5 : 0;
+        ctx.fillRect(x + 6 + sw, y + PH - 8, 9, 8); ctx.fillRect(x + 25 - sw, y + PH - 8, 9, 8);
         ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
         ctx.fillStyle = c.hat; ctx.fillText(s.names[who], x + PW / 2, y - 22);
         const b = s.bubbles[who];
@@ -161,8 +187,12 @@ function Play() {
         }
         ctx.textAlign = "left";
       };
-      drawP(other, th.x, th.y);
-      drawP(role, m.x, m.y);
+      drawP(other, th.x, th.y, Math.abs(th.vx) > 0.5, false, t / 16);
+      drawP(role, m.x, m.y, Math.abs(m.vx) > 0.5, !m.onGround, s.walk);
+      ctx.restore();
+      // progress bar
+      ctx.fillStyle = "#eee"; ctx.fillRect(440, 690, 400, 10);
+      ctx.fillStyle = SKINS[s.skins[role]].body; ctx.fillRect(440, 690, (400 * m.x) / L.width, 10);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -198,7 +228,7 @@ function Play() {
 
       <div className="play-hud">
         <button onClick={() => navigate({ to: "/lobby" })} className="hud-btn">✕</button>
-        <span className="hud-chip">Level {level}</span>
+        <span className="hud-chip">Level {level}/{MAX_LEVEL}</span>
         <span className="hud-chip">{partnerHere ? `🟢 ${g.current.names[other]}` : "⏳ Menunggu teman..."}</span>
         <button onClick={fullscreen} className="hud-btn">⛶</button>
         <button onClick={() => setChatOpen((v) => !v)} className="hud-btn">💬</button>
