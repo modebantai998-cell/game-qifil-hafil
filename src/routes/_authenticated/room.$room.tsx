@@ -4,7 +4,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
 import { SKINS, isSkin, type Skin } from "@/lib/game";
-import { Character } from "@/components/Character";
+import { Character, savedSkin } from "@/components/Character";
 
 type Role = "qifil" | "hafil";
 type Seat = { name: string; skin: Skin; ready: boolean; pid: string };
@@ -23,11 +23,6 @@ export const Route = createFileRoute("/_authenticated/room/$room")({
   }),
   component: RoomLobby,
 });
-
-export const savedSkin = (role: Role): Skin => {
-  const s = typeof localStorage !== "undefined" ? localStorage.getItem("skin") : null;
-  return isSkin(s) ? s : role === "qifil" ? "pink" : "biru";
-};
 
 function RoomLobby() {
   const { room } = Route.useParams();

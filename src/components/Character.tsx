@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { SKINS, type Skin } from "@/lib/game";
+import { SKINS, isSkin, type Skin } from "@/lib/game";
 
 /** Pico-Park style character for menus: blinks every 5 s and taps its feet. */
 export function Character({ skin, size = 80 }: { skin: Skin; size?: number }) {
@@ -23,3 +23,8 @@ export function Character({ skin, size = 80 }: { skin: Skin; size?: number }) {
     </svg>
   );
 }
+
+export const savedSkin = (role: "qifil" | "hafil"): Skin => {
+  const s = typeof localStorage !== "undefined" ? localStorage.getItem("skin") : null;
+  return isSkin(s) ? s : role === "qifil" ? "pink" : "biru";
+};
