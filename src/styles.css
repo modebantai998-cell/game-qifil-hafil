@@ -179,3 +179,17 @@
   .rotate-hint { @apply pointer-events-none absolute bottom-28 left-1/2 hidden -translate-x-1/2 rounded bg-foreground/80 px-3 py-1 text-xs text-background; }
   @media (orientation: portrait) { .rotate-hint { display: block; } }
 }
+
+@layer components {
+  .room-stage { @apply fixed inset-0 overflow-hidden text-foreground; background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 35%, var(--background)) 0%, var(--background) 60%, color-mix(in oklab, var(--primary) 25%, var(--background)) 100%); }
+  .room-top { @apply absolute top-2 left-2 right-2 flex items-center gap-2; }
+  .room-chip { @apply rounded-md border-2 border-foreground bg-card px-2 py-1 text-xs font-bold; }
+  .room-hint { @apply absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border-2 border-foreground bg-card px-3 py-1 text-xs; }
+  .room-floor { @apply absolute inset-x-0 bottom-[22%] flex items-end justify-center gap-10; }
+  .room-floor::after { content: ""; @apply absolute -bottom-4 left-1/2 h-6 w-80 max-w-[80%] -translate-x-1/2 rounded-[50%] bg-foreground/15; z-index: -1; }
+  .room-tag { @apply rounded-md border-2 border-foreground bg-card px-3 py-0.5 text-sm font-bold; }
+  .room-skins { @apply absolute left-2 top-1/2 flex -translate-y-1/2 flex-col items-center gap-2 rounded-xl border-2 border-foreground bg-card p-2; }
+  .room-swatch { @apply h-8 w-8 rounded-md border-2 border-foreground; }
+  .room-actions { @apply absolute bottom-3 right-3 flex items-center gap-2; }
+  .room-start { @apply rounded-lg border-4 border-foreground bg-primary px-6 py-3 font-pixel text-sm text-primary-foreground shadow-[4px_4px_0_var(--foreground)] disabled:opacity-40; }
+}

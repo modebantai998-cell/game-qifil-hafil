@@ -42,7 +42,7 @@ function Lobby() {
       .on("broadcast", { event: "answer" }, ({ payload }) => {
         if (payload.to !== me.player_id) return;
         setWaiting("");
-        if (payload.ok) navigate({ to: "/play/$room", params: { room: payload.room }, search: { role: "qifil" } });
+        if (payload.ok) navigate({ to: "/room/$room", params: { room: payload.room }, search: { role: "qifil" } });
         else alert(`${payload.fromName} menolak ajakan.`);
       })
       .subscribe((s) => { if (s === "SUBSCRIBED") ch.track({ name: me.username }); });
@@ -67,7 +67,7 @@ function Lobby() {
   const answer = (ok: boolean) => {
     if (!invite || !me) return;
     chan.current?.send({ type: "broadcast", event: "answer", payload: { to: invite.from, ok, room: invite.room, fromName: me.username } });
-    if (ok) navigate({ to: "/play/$room", params: { room: invite.room }, search: { role: "hafil" } });
+    if (ok) navigate({ to: "/room/$room", params: { room: invite.room }, search: { role: "hafil" } });
     setInvite(null);
   };
 
