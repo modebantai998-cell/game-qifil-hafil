@@ -14,7 +14,6 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedLobbyRouteImport } from './routes/_authenticated/lobby'
 import { Route as AuthenticatedPlayRoomRouteImport } from './routes/_authenticated/play.$room'
-import { Route as AuthenticatedRoomRoomRouteImport } from './routes/_authenticated/room.$room'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,25 +39,18 @@ const AuthenticatedPlayRoomRoute = AuthenticatedPlayRoomRouteImport.update({
   path: '/play/$room',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedRoomRoomRoute = AuthenticatedRoomRoomRouteImport.update({
-  id: '/room/$room',
-  path: '/room/$room',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/lobby': typeof AuthenticatedLobbyRoute
   '/play/$room': typeof AuthenticatedPlayRoomRoute
-  '/room/$room': typeof AuthenticatedRoomRoomRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/lobby': typeof AuthenticatedLobbyRoute
   '/play/$room': typeof AuthenticatedPlayRoomRoute
-  '/room/$room': typeof AuthenticatedRoomRoomRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,13 +59,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/lobby': typeof AuthenticatedLobbyRoute
   '/_authenticated/play/$room': typeof AuthenticatedPlayRoomRoute
-  '/_authenticated/room/$room': typeof AuthenticatedRoomRoomRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/lobby' | '/play/$room' | '/room/$room'
+  fullPaths: '/' | '/auth' | '/lobby' | '/play/$room'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/lobby' | '/play/$room' | '/room/$room'
+  to: '/' | '/auth' | '/lobby' | '/play/$room'
   id:
     | '__root__'
     | '/'
@@ -81,7 +72,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/lobby'
     | '/_authenticated/play/$room'
-    | '/_authenticated/room/$room'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -127,26 +117,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlayRoomRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/room/$room': {
-      id: '/_authenticated/room/$room'
-      path: '/room/$room'
-      fullPath: '/room/$room'
-      preLoaderRoute: typeof AuthenticatedRoomRoomRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedLobbyRoute: typeof AuthenticatedLobbyRoute
   AuthenticatedPlayRoomRoute: typeof AuthenticatedPlayRoomRoute
-  AuthenticatedRoomRoomRoute: typeof AuthenticatedRoomRoomRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLobbyRoute: AuthenticatedLobbyRoute,
   AuthenticatedPlayRoomRoute: AuthenticatedPlayRoomRoute,
-  AuthenticatedRoomRoomRoute: AuthenticatedRoomRoomRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

@@ -193,3 +193,33 @@
   .room-actions { @apply absolute bottom-3 right-3 flex items-center gap-2; }
   .room-start { @apply rounded-lg border-4 border-foreground bg-primary px-6 py-3 font-pixel text-sm text-primary-foreground shadow-[4px_4px_0_var(--foreground)] disabled:opacity-40; }
 }
+
+/* Landscape lock: in portrait, rotate the whole screen 90° so it stays wide like a native game */
+@media (orientation: portrait) {
+  .ff-lock { inset: auto !important; top: 0 !important; left: 0 !important; width: 100dvh !important; height: 100dvw !important; transform-origin: top left; transform: rotate(90deg) translateY(-100%); }
+  .ff-lock .rotate-hint { display: none !important; }
+  .ff-lock .play-canvas { width: 100dvh; max-height: 100dvw; }
+}
+@layer components {
+  .intro { @apply fixed inset-0 flex flex-col items-center justify-center gap-6 overflow-hidden bg-foreground p-6; }
+  .intro-bar { @apply h-4 w-full max-w-md overflow-hidden rounded-full border-2 border-background/60 bg-background/10; }
+  .intro-fill { @apply h-full bg-primary; box-shadow: 0 0 16px var(--primary); }
+  .intro-tap { @apply font-pixel text-sm text-background; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .ff-stage { @apply fixed inset-0 overflow-hidden text-foreground select-none; background: radial-gradient(ellipse at 50% 30%, color-mix(in oklab, var(--accent) 45%, var(--background)), color-mix(in oklab, var(--foreground) 85%, var(--primary)) 100%); }
+  .ff-screen { @apply absolute left-[24%] right-[24%] top-[12%] h-[44%] overflow-hidden rounded-xl border-4 border-primary bg-foreground; box-shadow: 0 0 30px color-mix(in oklab, var(--primary) 60%, transparent), inset 0 0 20px #0008; transform: perspective(600px) rotateX(6deg); }
+  .ff-screen video { @apply h-full w-full object-cover; }
+  .ff-floor { @apply absolute inset-x-[8%] bottom-[14%] h-[12%] rounded-[50%]; background: linear-gradient(180deg, color-mix(in oklab, var(--primary) 70%, var(--background)), color-mix(in oklab, var(--primary) 40%, var(--foreground))); box-shadow: 0 8px 0 color-mix(in oklab, var(--primary) 30%, var(--foreground)), 0 0 40px color-mix(in oklab, var(--primary) 50%, transparent); }
+  .ff-chars { @apply absolute inset-x-0 bottom-[19%] flex items-end justify-center gap-[12%]; }
+  .ff-tag { @apply mt-1 rounded-md border-2 border-foreground bg-card px-2 py-0.5 text-xs font-bold; }
+  .ff-top { @apply absolute left-2 right-2 top-2 flex items-center gap-2; }
+  .ff-chip { @apply rounded-md border-2 border-foreground bg-card px-2 py-1 text-xs font-bold; }
+  .ff-left { @apply absolute left-2 top-14 flex w-40 flex-col gap-2; }
+  .ff-right { @apply absolute right-2 top-14 flex flex-col items-center gap-1 rounded-lg bg-card/80 p-1.5; }
+  .ff-modes { @apply absolute bottom-16 right-2 flex gap-1; }
+  .ff-mode { @apply rounded-md border-2 border-foreground bg-card px-2 py-1 text-[10px] font-bold; }
+  .ff-mode-on { @apply bg-accent text-accent-foreground; }
+  .ff-start { @apply absolute bottom-2 right-2 flex items-center gap-2; }
+  .ff-go { @apply rounded-lg border-2 border-foreground bg-accent px-6 py-3 font-pixel text-sm text-accent-foreground shadow-[3px_3px_0_var(--foreground)] disabled:opacity-40; }
+  .ff-panel { @apply rounded-lg border-2 border-foreground bg-card/90 p-2 text-xs; }
+}

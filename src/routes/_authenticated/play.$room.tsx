@@ -9,7 +9,7 @@ import { savedSkin } from "@/components/Character";
 type Role = "qifil" | "hafil";
 
 export const Route = createFileRoute("/_authenticated/play/$room")({
-  validateSearch: (s: Record<string, unknown>): { role: Role } => ({ role: s["role"] === "hafil" ? "hafil" : "qifil" }),
+  validateSearch: (s: Record<string, unknown>): { role: Role; lv: number } => ({ role: s["role"] === "hafil" ? "hafil" : "qifil", lv: Math.min(100, Math.max(1, Number(s["lv"]) || 1)) }),
   head: () => ({
     meta: [
       { title: "Main - QIFIL DAN HAFIL" },
@@ -27,7 +27,7 @@ const QUICK = ["Sini!", "Tumpuk!", "Injak tombol!", "Ambil kunci!", "Ke pintu!",
 
 function Play() {
   const { room } = Route.useParams();
-  const { role } = Route.useSearch();
+  const { role, lv } = Route.useSearch();
   const other: Role = role === "qifil" ? "hafil" : "qifil";
   const me = useProfile();
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ function Play() {
   };
 
   useEffect(() => {
-    resetLevel(1);
+    resetLevel(lv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -223,7 +223,7 @@ function Play() {
   });
 
   return (
-    <div className="play-stage">
+    <div className="play-stage ff-lock">
       <canvas ref={canvasRef} width={W} height={H} className="play-canvas" />
 
       <div className="play-hud">

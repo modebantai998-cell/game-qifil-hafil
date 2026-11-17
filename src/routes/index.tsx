@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import logo from "@/assets/qifil-hafil-logo.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -12,14 +13,28 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Home,
+  component: Intro,
 });
 
-function Home() {
+async function goWide() {
+  try { await document.documentElement.requestFullscreen?.(); } catch { /* not allowed */ }
+  try { await (screen.orientation as unknown as { lock?: (o: string) => Promise<void> }).lock?.("landscape"); } catch { /* unsupported */ }
+}
+
+function Intro() {
+  const [p, setP] = useState(1);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const t = setInterval(() => setP((v) => (v >= 100 ? 100 : Math.min(100, v + 1 + Math.floor(Math.random() * 4)))), 25);
+    return () => clearInterval(t);
+  }, []);
+  const done = p >= 100;
+  const enter = async () => { if (!done) return; await goWide(); navigate({ to: "/lobby" }); };
   return (
-    <main className="pixel-page flex flex-col items-center justify-center">
-      <img src={logo.url} alt="QIFIL DAN HAFIL" className="w-full max-w-md rounded-xl" />
-      <Link to="/lobby" className="pixel-btn mt-8 px-10">MAIN ▶</Link>
+    <main className="intro ff-lock" onClick={enter}>
+      <img src={logo.url} alt="QIFIL DAN HAFIL" className="w-full max-w-sm rounded-xl" />
+      <div className="intro-bar"><div className="intro-fill" style={{ width: `${p}%` }} /></div>
+      {done ? <p className="intro-tap">KETUK UNTUK MASUK</p> : <p className="font-pixel text-xs text-background">Memuat... {p}%</p>}
     </main>
   );
 }
